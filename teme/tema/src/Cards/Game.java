@@ -1,5 +1,8 @@
 package Cards;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import fileio.ActionsInput;
 import fileio.GameInput;
 import fileio.StartGameInput;
@@ -10,10 +13,9 @@ import java.util.Random;
 
 
 public class Game {
-    private Player one;
-    private Player two;
-    private int playerOneDeckIdx;
-    private int playerTwoDeckIdx;
+    private Player[] players = new Player[2];
+    private int[] playerDeckIdx = new int[2];
+
     private int startingPlayer;
     private int shuffleSeed;
     private ArrayList<Action> actions = new ArrayList<>();
@@ -21,10 +23,10 @@ public class Game {
 
 
     public Game(Player o, Player t, GameInput s){
-        this.one = o;
-        this.two = t;
-        playerOneDeckIdx = s.getStartGame().getPlayerOneDeckIdx();
-        playerTwoDeckIdx = s.getStartGame().getPlayerTwoDeckIdx();
+        this.players[0] = o;
+        this.players[1] = t;
+        playerDeckIdx[0] = s.getStartGame().getPlayerOneDeckIdx();
+        playerDeckIdx[1] = s.getStartGame().getPlayerTwoDeckIdx();
         startingPlayer = s.getStartGame().getStartingPlayer();
         shuffleSeed = s.getStartGame().getShuffleSeed();
 
@@ -37,24 +39,67 @@ public class Game {
     }
 
     public void shuffleDecks(int shuffleSeed) {
-       Collections.shuffle(one.getDecks().get(playerOneDeckIdx), new Random(shuffleSeed));
-        Collections.shuffle(two.getDecks().get(playerTwoDeckIdx), new Random(shuffleSeed));
+       Collections.shuffle(players[0].getDecks().get(playerDeckIdx[0]), new Random(shuffleSeed));
+        Collections.shuffle(players[1].getDecks().get(playerDeckIdx[1]), new Random(shuffleSeed));
     }
 
-    public void play() {
+    public void play(ArrayNode output) {
         int gainMana = 1;
+        ObjectMapper mapper = new ObjectMapper();
         //ceva for
-        one.getHand().add(one.getDeck(playerOneDeckIdx).remove(0));
-        two.getHand().add(two.getDeck(playerTwoDeckIdx).remove(0));
+        int actionIndex = 0;
+        for(int curAcc = 0; curAcc < actions.size(); curAcc++) {
+            if (players[0].getDeck(playerDeckIdx[0]).size() > 0)
+                players[0].getHand().add(players[0].getDeck(playerDeckIdx[0]).remove(0));
+            if (players[1].getDeck(playerDeckIdx[1]).size() > 0)
+            players[1].getHand().add(players[1].getDeck(playerDeckIdx[1]).remove(0));
 
-        if(one.getMana() < 10)
-            one.setMana(one.getMana() + gainMana);
+            if (players[0].getMana() < 10)
+                players[0].setMana(players[0].getMana() + gainMana);
 
-        if(two.getMana() < 10)
-            two.setMana(two.getMana() + gainMana);
+            if (players[1].getMana() < 10)
+                players[1].setMana(players[1].getMana() + gainMana);
 
-        Action currentAction = actions.get(0);
+            gainMana++;
 
+            Action currentAction = actions.get(actionIndex);
+            // System.out.println(currentAction.getPlayerIdx());
+            actionIndex++;//poate cu remove
+            ArrayNode arrayNode = mapper.createArrayNode();
+
+            switch (currentAction.getCommand()) {
+                case "getCardsInHand" : {
+                    ObjectNode objectNode = mapper.createObjectNode();
+                    objectNode.put("command", "getCardsInHand");
+                    objectNode.put("playerIdx", currentAction.getPlayerIdx());
+                    output.add(objectNode);
+                    for(int i = 0; i < players[currentAction.getPlayerIdx() - 1].getHand().size(); i++) {
+                        ObjectNode jsonNode = players[currentAction.getPlayerIdx() - 1].getHand().get(i).outputCard();
+                        arrayNode.add(jsonNode);
+                    }
+                    ObjectNode outputNode = mapper.createObjectNode();
+                    outputNode.put("output", arrayNode);
+                    output.add(outputNode);
+                }
+                case "getPlayerDeck" : {
+                    ObjectNode objectNode = mapper.createObjectNode();
+                    objectNode.put("command", "getPlayerDeck");
+                    objectNode.put("playerIdx", currentAction.getPlayerIdx());
+                    output.add(objectNode);
+                    for(int i = 0; i < players[currentAction.getPlayerIdx() - 1].getDeck(playerDeckIdx[currentAction.getPlayerIdx() - 1]).size(); i++) {
+                        ObjectNode jsonNode = players[currentAction.getPlayerIdx() - 1].getDeck(playerDeckIdx[currentAction.getPlayerIdx() - 1]).get(i).outputCard();
+                        arrayNode.add(jsonNode);
+                    }
+                    ObjectNode outputNode = mapper.createObjectNode();
+                    outputNode.put("output", arrayNode);
+                    output.add(outputNode);
+                }
+                case "getPlayerHero" : {
+                    
+                }
+            }
+            //break;
+        }
 
 
 
@@ -71,35 +116,27 @@ public class Game {
     }
 
     public Player getOne() {
-        return this.one;
+        return this.players[0];
     }
 
     public void setOne(final Player one) {
-        this.one = one;
+        this.players[0] = one;
     }
 
     public Player getTwo() {
-        return this.two;
+        return this.players[1];
     }
 
     public void setTwo(final Player two) {
-        this.two = two;
+        this.players[0] = two;
     }
 
-    public int getPlayerOneDeckIdx() {
-        return this.playerOneDeckIdx;
+    public int getPlayerDeckIdx(int index) {
+        return this.playerDeckIdx[index];
     }
 
-    public void setPlayerOneDeckIdx(final int playerOneDeckIdx) {
-        this.playerOneDeckIdx = playerOneDeckIdx;
-    }
-
-    public int getPlayerTwoDeckIdx() {
-        return this.playerTwoDeckIdx;
-    }
-
-    public void setPlayerTwoDeckIdx(final int playerTwoDeckIdx) {
-        this.playerTwoDeckIdx = playerTwoDeckIdx;
+    public void setPlayerDeckIdx(final int playerDeckIdx, int index) {
+        this.playerDeckIdx[index] = playerDeckIdx;
     }
 
     public int getStartingPlayer() {

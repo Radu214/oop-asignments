@@ -81,20 +81,20 @@ public final class Main {
 
         int nrGames = inputData.getGames().size();
         Game game;
-
+        ArrayNode output = objectMapper.createArrayNode();
         for(int i = 0; i < nrGames; i++) {
             game = new Game(one, two, inputData.getGames().get(i));
            // Game game2 = game;
             game.shuffleDecks(game.getShuffleSeed());
-            game.play(); //pun in main game loop-ul
+            game.play(output);
         }
 
 
         //System.out.println(inputData);
 
-         ArrayNode output = objectMapper.createArrayNode();
 
-         ObjectMapper mapper = new ObjectMapper();
+
+
 
         /*
          * TODO Implement your function here
@@ -116,6 +116,6 @@ public final class Main {
          */
 
         ObjectWriter objectWriter = objectMapper.writerWithDefaultPrettyPrinter();
-        //objectWriter.writeValue(new File(filePath2), output);
+        objectWriter.writeValue(new File(filePath2), output);
     }
 }

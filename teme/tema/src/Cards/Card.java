@@ -1,5 +1,6 @@
 package Cards;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import fileio.CardInput;
 
 import java.util.ArrayList;
@@ -15,6 +16,11 @@ public class Card {
         description = c.getDescription();
         colors = c.getColors();
         name = c.getName();
+    }
+
+    public ObjectNode outputCard() {
+        // O sa fie suprascrisa
+        return null;
     }
 
 

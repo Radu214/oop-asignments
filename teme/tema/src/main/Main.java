@@ -83,6 +83,10 @@ public final class Main {
         Game game;
         ArrayNode output = objectMapper.createArrayNode();
         for(int i = 0; i < nrGames; i++) {
+            Hero oneHero = new Hero(inputData.getGames().get(i).getStartGame().getPlayerOneHero());
+            Hero twoHero = new Hero(inputData.getGames().get(i).getStartGame().getPlayerTwoHero());
+            one.setHero(oneHero);
+            two.setHero(twoHero);
             game = new Game(one, two, inputData.getGames().get(i));
            // Game game2 = game;
             game.shuffleDecks(game.getShuffleSeed());

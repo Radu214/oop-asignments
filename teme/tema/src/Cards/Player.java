@@ -15,6 +15,7 @@ public class Player {
     private int nrCardsInDeck;
 
     public Player(DecksInput d) {
+
         hand = new ArrayList<>();
         int nrDecks = d.getNrDecks();
         nrCardsInDeck = d.getNrCardsInDeck();

@@ -80,6 +80,7 @@ public class Game {
                     ObjectNode outputNode = mapper.createObjectNode();
                     outputNode.put("output", arrayNode);
                     output.add(outputNode);
+                    break;
                 }
                 case "getPlayerDeck" : {
                     ObjectNode objectNode = mapper.createObjectNode();
@@ -93,9 +94,19 @@ public class Game {
                     ObjectNode outputNode = mapper.createObjectNode();
                     outputNode.put("output", arrayNode);
                     output.add(outputNode);
+                    break;
                 }
                 case "getPlayerHero" : {
-                    
+                    ObjectNode objectNode = mapper.createObjectNode();
+                    objectNode.put("command", "getPlayerHero");
+                    objectNode.put("playerIdx", currentAction.getPlayerIdx());
+                    output.add(objectNode);
+                    ObjectNode jsonNode = players[currentAction.getPlayerIdx() - 1].getHero().outputCard();
+                    arrayNode.add(jsonNode);
+                    ObjectNode outputNode = mapper.createObjectNode();
+                    outputNode.put("output", arrayNode);
+                    output.add(outputNode);
+                    break;
                 }
             }
             //break;

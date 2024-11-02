@@ -87,9 +87,11 @@ public final class Main {
             Hero twoHero = new Hero(inputData.getGames().get(i).getStartGame().getPlayerTwoHero());
             one.setHero(oneHero);
             two.setHero(twoHero);
+
             game = new Game(one, two, inputData.getGames().get(i));
            // Game game2 = game;
             game.shuffleDecks(game.getShuffleSeed());
+
             game.play(output);
         }
 

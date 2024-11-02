@@ -10,12 +10,13 @@ public class Player {
     private int number;
     private int mana;
     private ArrayList<ArrayList<Minion>> decks;
+    private ArrayList<Minion> playingDeck;
     private Hero hero;
     private ArrayList<Minion> hand;
     private int nrCardsInDeck;
 
     public Player(DecksInput d) {
-
+        playingDeck = new ArrayList<>();
         hand = new ArrayList<>();
         int nrDecks = d.getNrDecks();
         nrCardsInDeck = d.getNrCardsInDeck();
@@ -33,6 +34,13 @@ public class Player {
         }
     }
 
+    public ArrayList<Minion> getPlayingDeck() {
+        return this.playingDeck;
+    }
+
+    public void setPlayingDeck(final ArrayList<Minion> playingDeck) {
+        this.playingDeck = playingDeck;
+    }
 
     public int getNrCardsInDeck() {
         return this.nrCardsInDeck;

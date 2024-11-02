@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import fileio.ActionsInput;
 import fileio.GameInput;
 import fileio.StartGameInput;
+import Cards.Commands.actionsFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
+
 
 
 public class Game {
@@ -19,10 +21,13 @@ public class Game {
     private int startingPlayer;
     private int shuffleSeed;
     private ArrayList<Action> actions = new ArrayList<>();
+    private Card[][] table;
+    private int currentPlayer;
 
-
+//Carti speciale extends Minioni cred sau verific doar numele
 
     public Game(Player o, Player t, GameInput s){
+        table = new Card[4][5];
         this.players[0] = o;
         this.players[1] = t;
         playerDeckIdx[0] = s.getStartGame().getPlayerOneDeckIdx();
@@ -32,27 +37,49 @@ public class Game {
 
         int nr = s.getActions().size();
         for(int i = 0; i < nr; i++) {
-            Action act = new Action(s.getActions().get(i));
-            actions.add(act);
+            actionsFactory factory = new actionsFactory(s.getActions().get(i).getPlayerIdx());
+            Action act = factory.getAction(s.getActions().get(i).getCommand());
+            if(act != null)
+                actions.add(act);
         }
+
+
 
     }
 
     public void shuffleDecks(int shuffleSeed) {
-       Collections.shuffle(players[0].getDecks().get(playerDeckIdx[0]), new Random(shuffleSeed));
-        Collections.shuffle(players[1].getDecks().get(playerDeckIdx[1]), new Random(shuffleSeed));
+        ArrayList<Minion> playerOneDeckClone = (ArrayList<Minion>) players[0].getDecks().get(playerDeckIdx[0]).clone();
+        ArrayList<Minion> playerTwoDeckClone = (ArrayList<Minion>) players[1].getDecks().get(playerDeckIdx[1]).clone();
+
+    /*    ArrayList<Minion>[] playersShuffledDeck = new ArrayList[2];
+        playersShuffledDeck[0] = (ArrayList<Minion>) players[0].getDecks().get(playerDeckIdx[0]).clone();
+        playersShuffledDeck[1] = (ArrayList<Minion>) players[1].getDecks().get(playerDeckIdx[1]).clone();
+*/
+
+        players[0].setPlayingDeck(playerOneDeckClone);
+        players[1].setPlayingDeck(playerTwoDeckClone);
+
+
+
+        Collections.shuffle(players[0].getPlayingDeck(), new Random(shuffleSeed));
+        Collections.shuffle(players[1].getPlayingDeck(), new Random(shuffleSeed));
     }
 
     public void play(ArrayNode output) {
+        System.out.println(actions);
         int gainMana = 1;
         ObjectMapper mapper = new ObjectMapper();
         //ceva for
-        int actionIndex = 0;
-        for(int curAcc = 0; curAcc < actions.size(); curAcc++) {
-            if (players[0].getDeck(playerDeckIdx[0]).size() > 0)
-                players[0].getHand().add(players[0].getDeck(playerDeckIdx[0]).remove(0));
-            if (players[1].getDeck(playerDeckIdx[1]).size() > 0)
-            players[1].getHand().add(players[1].getDeck(playerDeckIdx[1]).remove(0));
+        currentPlayer = startingPlayer - 1;
+        while(actions.size() > 0) {
+            //Vad si aici ce vad si mai jos
+            if (players[0].getPlayingDeck().size() > 0)
+                players[0].getHand().add(players[0].getPlayingDeck().remove(0));
+            if (players[1].getPlayingDeck().size() > 0)
+                players[1].getHand().add(players[1].getPlayingDeck().remove(0));
+
+            //Vad daca ambii la runda sau fiecare pe tura lui
+            //Primeste mana
 
             if (players[0].getMana() < 10)
                 players[0].setMana(players[0].getMana() + gainMana);
@@ -62,52 +89,15 @@ public class Game {
 
             gainMana++;
 
-            Action currentAction = actions.get(actionIndex);
+//            Action currentAction = actions.remove(0);
+//            currentAction.setCurrentGame(this);
+            // doCommands command = new doCommands(currentAction, this);
             // System.out.println(currentAction.getPlayerIdx());
-            actionIndex++;//poate cu remove
-            ArrayNode arrayNode = mapper.createArrayNode();
-
-            switch (currentAction.getCommand()) {
-                case "getCardsInHand" : {
-                    ObjectNode objectNode = mapper.createObjectNode();
-                    objectNode.put("command", "getCardsInHand");
-                    objectNode.put("playerIdx", currentAction.getPlayerIdx());
-                    output.add(objectNode);
-                    for(int i = 0; i < players[currentAction.getPlayerIdx() - 1].getHand().size(); i++) {
-                        ObjectNode jsonNode = players[currentAction.getPlayerIdx() - 1].getHand().get(i).outputCard();
-                        arrayNode.add(jsonNode);
-                    }
-                    ObjectNode outputNode = mapper.createObjectNode();
-                    outputNode.put("output", arrayNode);
-                    output.add(outputNode);
-                    break;
-                }
-                case "getPlayerDeck" : {
-                    ObjectNode objectNode = mapper.createObjectNode();
-                    objectNode.put("command", "getPlayerDeck");
-                    objectNode.put("playerIdx", currentAction.getPlayerIdx());
-                    output.add(objectNode);
-                    for(int i = 0; i < players[currentAction.getPlayerIdx() - 1].getDeck(playerDeckIdx[currentAction.getPlayerIdx() - 1]).size(); i++) {
-                        ObjectNode jsonNode = players[currentAction.getPlayerIdx() - 1].getDeck(playerDeckIdx[currentAction.getPlayerIdx() - 1]).get(i).outputCard();
-                        arrayNode.add(jsonNode);
-                    }
-                    ObjectNode outputNode = mapper.createObjectNode();
-                    outputNode.put("output", arrayNode);
-                    output.add(outputNode);
-                    break;
-                }
-                case "getPlayerHero" : {
-                    ObjectNode objectNode = mapper.createObjectNode();
-                    objectNode.put("command", "getPlayerHero");
-                    objectNode.put("playerIdx", currentAction.getPlayerIdx());
-                    output.add(objectNode);
-                    ObjectNode jsonNode = players[currentAction.getPlayerIdx() - 1].getHero().outputCard();
-                    arrayNode.add(jsonNode);
-                    ObjectNode outputNode = mapper.createObjectNode();
-                    outputNode.put("output", arrayNode);
-                    output.add(outputNode);
-                    break;
-                }
+            //poate cu remove
+            boolean turnEnded = false;
+            while (actions.size() > 0 && turnEnded == false) {
+                Action currentAction = actions.remove(0);
+                currentAction.execute(output, this);
             }
             //break;
         }
@@ -117,6 +107,37 @@ public class Game {
 
     }
 
+    public Player[] getPlayers() {
+        return this.players;
+    }
+
+    public void setPlayers(final Player[] players) {
+        this.players = players;
+    }
+
+    public int[] getPlayerDeckIdx() {
+        return this.playerDeckIdx;
+    }
+
+    public void setPlayerDeckIdx(final int[] playerDeckIdx) {
+        this.playerDeckIdx = playerDeckIdx;
+    }
+
+    public Card[][] getTable() {
+        return this.table;
+    }
+
+    public void setTable(final Card[][] table) {
+        this.table = table;
+    }
+
+    public int getCurrentPlayer() {
+        return this.currentPlayer;
+    }
+
+    public void setCurrentPlayer(final int currentPlayer) {
+        this.currentPlayer = currentPlayer;
+    }
 
     public ArrayList<Action> getActions() {
         return this.actions;

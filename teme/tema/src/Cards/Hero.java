@@ -1,5 +1,6 @@
 package Cards;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import fileio.CardInput;
@@ -8,7 +9,9 @@ public class Hero extends Card{
     public enum ability {
         SUBZERO, LOWBLOW, EARTHBORN, BLOODTHIRST
     };
+    @JsonIgnore
     private ability abilityHero;
+
     int health = 30;
 
     public Hero(CardInput c) {
@@ -37,5 +40,23 @@ public class Hero extends Card{
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode jsonNode = objectMapper.valueToTree(this);
         return jsonNode;
+    }
+
+    //Se folosesc la valueToTree
+
+    public ability getAbilityHero() {
+        return this.abilityHero;
+    }
+
+    public void setAbilityHero(final ability abilityHero) {
+        this.abilityHero = abilityHero;
+    }
+
+    public int getHealth() {
+        return this.health;
+    }
+
+    public void setHealth(final int health) {
+        this.health = health;
     }
 }

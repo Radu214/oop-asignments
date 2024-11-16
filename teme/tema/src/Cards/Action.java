@@ -31,6 +31,7 @@ public interface Action {
 //    public Action() {
 //
 //    }
+    //Returneaza 0 daca nu se termina tura sau 1 daca se termina
+    public int execute(ArrayNode output, Game game);
 
-    public void execute(ArrayNode output, Game game);
 }

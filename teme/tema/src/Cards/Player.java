@@ -27,8 +27,10 @@ public class Player {
         for(int i = 0; i < nrDecks; i++) {
             ArrayList<Minion> currentDeck = new ArrayList<>();
             for (int j = 0; j < nrCardsInDeck; j++) {
-                Minion card = new Minion(d.getDecks().get(i).get(j));
-                currentDeck.add(card);
+                minionFactory factory = new minionFactory(d.getDecks().get(i).get(j));
+                Minion card = factory.getMinion(d.getDecks().get(i).get(j).getName());
+                if(card != null)
+                    currentDeck.add(card);
             }
             decks.add(currentDeck);
         }

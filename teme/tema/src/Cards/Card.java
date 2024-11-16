@@ -5,11 +5,12 @@ import fileio.CardInput;
 
 import java.util.ArrayList;
 
-public class Card {
+abstract public class Card {
     private int mana;
     private String description;
     private ArrayList<String> colors;
     private String name;
+
 
     public Card(CardInput c) {
         mana = c.getMana();
@@ -19,10 +20,8 @@ public class Card {
     }
 
     public ObjectNode outputCard() {
-        // O sa fie suprascrisa
         return null;
     }
-
 
     public int getMana() {
         return this.mana;
@@ -41,10 +40,10 @@ public class Card {
     }
 
     public ArrayList<String> getColors() {
-        return colors;
+        return this.colors;
     }
 
-    public void setColors(ArrayList<String> colors) {
+    public void setColors(final ArrayList<String> colors) {
         this.colors = colors;
     }
 

@@ -5,18 +5,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import fileio.CardInput;
 
+import java.util.ArrayList;
+
 public class Hero extends Card{
+
     public enum ability {
         SUBZERO, LOWBLOW, EARTHBORN, BLOODTHIRST
     };
     @JsonIgnore
     private ability abilityHero;
 
-    int health = 30;
+    int health = 30; //nu cred ca e bine, posibil sa fie final
 
     public Hero(CardInput c) {
         super(c);
-        switch (super.getName()) {
+        switch (this.getName()) {
             case "Lord Royce" : {
                 abilityHero = ability.SUBZERO;
                 break;
@@ -43,6 +46,7 @@ public class Hero extends Card{
     }
 
     //Se folosesc la valueToTree
+
 
     public ability getAbilityHero() {
         return this.abilityHero;

@@ -1,12 +1,13 @@
 package Cards;
 
+import Cards.Commands.ActionsFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import fileio.ActionsInput;
 import fileio.GameInput;
 import fileio.StartGameInput;
-import Cards.Commands.actionsFactory;
+import Cards.Commands.ActionsFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,13 +22,13 @@ public class Game {
     private int startingPlayer;
     private int shuffleSeed;
     private ArrayList<Action> actions = new ArrayList<>();
-    private Card[][] table;
+    private Minion[][] table;
     private int currentPlayer;
 
 //Carti speciale extends Minioni cred sau verific doar numele
 
     public Game(Player o, Player t, GameInput s){
-        table = new Card[4][5];
+        table = new Minion[4][5];
         this.players[0] = o;
         this.players[1] = t;
         playerDeckIdx[0] = s.getStartGame().getPlayerOneDeckIdx();
@@ -37,7 +38,7 @@ public class Game {
 
         int nr = s.getActions().size();
         for(int i = 0; i < nr; i++) {
-            actionsFactory factory = new actionsFactory(s.getActions().get(i).getPlayerIdx());
+            ActionsFactory factory = new ActionsFactory(s.getActions().get(i).getPlayerIdx());
             Action act = factory.getAction(s.getActions().get(i).getCommand());
             if(act != null)
                 actions.add(act);
@@ -67,37 +68,48 @@ public class Game {
 
     public void play(ArrayNode output) {
         System.out.println(actions);
+        int roundEnded = 0;
         int gainMana = 1;
         ObjectMapper mapper = new ObjectMapper();
         //ceva for
         currentPlayer = startingPlayer - 1;
         while(actions.size() > 0) {
-            //Vad si aici ce vad si mai jos
-            if (players[0].getPlayingDeck().size() > 0)
-                players[0].getHand().add(players[0].getPlayingDeck().remove(0));
-            if (players[1].getPlayingDeck().size() > 0)
-                players[1].getHand().add(players[1].getPlayingDeck().remove(0));
+            //Cand ar trebui sa aiba mana nu are.
+            if(roundEnded == 0) {
+                if (players[0].getPlayingDeck().size() > 0)
+                    players[0].getHand().add(players[0].getPlayingDeck().remove(0));
+                if (players[1].getPlayingDeck().size() > 0)
+                    players[1].getHand().add(players[1].getPlayingDeck().remove(0));
 
-            //Vad daca ambii la runda sau fiecare pe tura lui
-            //Primeste mana
+                //Vad daca ambii la runda sau fiecare pe tura lui
+                //Primeste mana
+                //Daca sterg aceste if-uri moare testul 2
+                if (players[0].getMana() < 10)
+                    players[0].setMana(players[0].getMana() + gainMana);
 
-            if (players[0].getMana() < 10)
-                players[0].setMana(players[0].getMana() + gainMana);
+                if (players[1].getMana() < 10)
+                    players[1].setMana(players[1].getMana() + gainMana);
+                gainMana++;
+            }
 
-            if (players[1].getMana() < 10)
-                players[1].setMana(players[1].getMana() + gainMana);
 
-            gainMana++;
 
 //            Action currentAction = actions.remove(0);
 //            currentAction.setCurrentGame(this);
             // doCommands command = new doCommands(currentAction, this);
             // System.out.println(currentAction.getPlayerIdx());
             //poate cu remove
-            boolean turnEnded = false;
-            while (actions.size() > 0 && turnEnded == false) {
+
+            while (actions.size() > 0) {
                 Action currentAction = actions.remove(0);
-                currentAction.execute(output, this);
+                if(currentAction.execute(output, this) == 1) {
+                    if(roundEnded == 1)
+                        roundEnded = 0;
+                    else
+                        roundEnded = 1;
+
+                    break;
+                }
             }
             //break;
         }
@@ -106,6 +118,8 @@ public class Game {
 
 
     }
+
+
 
     public Player[] getPlayers() {
         return this.players;
@@ -123,11 +137,11 @@ public class Game {
         this.playerDeckIdx = playerDeckIdx;
     }
 
-    public Card[][] getTable() {
+    public Minion[][] getTable() {
         return this.table;
     }
 
-    public void setTable(final Card[][] table) {
+    public void setTable(final Minion[][] table) {
         this.table = table;
     }
 

@@ -2,20 +2,19 @@ package Cards.Commands;
 
 import Cards.Action;
 import Cards.Game;
-import Cards.Player;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public class getPlayerDeck implements Action {
+public class GetPlayerDeck implements Action {
     private int playerIdx;
 
-    public getPlayerDeck(final int playerIdx) {
+    public GetPlayerDeck(final int playerIdx) {
         this.playerIdx = playerIdx;
     }
 
     @Override
-    public void execute(ArrayNode output, Game game) {
+    public int execute(ArrayNode output, Game game) {
         ObjectMapper mapper = new ObjectMapper();
         ArrayNode arrayNode = mapper.createArrayNode();
         //Trebuie luat deckul full, inclusiv ce a tras deja, dar cred ca amestecat totusi
@@ -32,5 +31,6 @@ public class getPlayerDeck implements Action {
 
         outputNode.put("output", arrayNode);
         output.add(outputNode);
+        return 0;
     }
 }
